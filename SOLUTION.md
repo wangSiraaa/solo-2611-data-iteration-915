@@ -7,7 +7,11 @@ A standalone, Python 3.11 solution for the brief in `README.md`:
   allocation;
 * an **after-sales ledger** that binds each sale to a complete published quote
   and refunds exactly the per-unit amount that sale paid, with idempotent
-  requests, all-or-nothing overlap rejection, and transactional stock moves.
+  requests, all-or-nothing overlap rejection, and transactional stock moves;
+* a **consortium settlement layer** (see `CONSORTIUM.md`): joint counters with
+  coupon consent terms, independent coalition quotes on one frozen snapshot,
+  and exact integer splits of realised savings with re-checkable infeasibility
+  certificates.
 
 No external dependencies are required — only the standard library and SQLite.
 
@@ -18,7 +22,11 @@ No external dependencies are required — only the standard library and SQLite.
 # results/demo_results.json, including independent cross-checks.
 python3 -m basket_service demo
 
-# Unit / differential / concurrency tests (40 tests).
+# Consortium settlement demo: real sales -> coalition quotes -> signed splits
+# (or re-checkable rejection certificates), 29 checks.
+python3 -m basket_service consortium-demo
+
+# Unit / differential / concurrency tests (86 tests).
 python3 -m basket_service self-check
 # or: python3 -m unittest discover -s tests -v
 
@@ -131,14 +139,26 @@ basket_service/
   optimizer.py     exact bitmask optimizer + deterministic tie-break
   reference.py     independent brute-force / Fraction reference (tests only)
   db.py            SQLite schema and transaction helpers
-  quote_service.py snapshots and quote API
+  quote_service.py snapshots and quote API (full and coupon-subset quotes)
   ledger.py        sales, returns, inventory, audits
+  consortium.py    consortiums, deals, coalition quotes, settlements, audits
+  settlement.py    exact split solver: rational simplex + CP + certificates
   planner.py       JSON plan runner
-  demo.py          demo driver + CLI (demo / run-plan / self-check)
-tests/             optimizer, quote-service, ledger, reference tests
-data/              real SQLite databases (created by the demo)
+  demo.py          demo driver + CLI (demo / consortium-demo / run-plan / self-check)
+  consortium_demo.py  consortium settlement demo driver
+tests/             optimizer, quote-service, ledger, reference, settlement,
+                   consortium tests
+data/              real SQLite databases (created by the demos)
 results/           JSON plans and result records
 ```
+
+The consortium layer is documented in `CONSORTIUM.md`.  It only *adds* API
+surface: `QuoteService.quote_subset` (a quote pinned to a subset of a frozen
+snapshot's coupon catalogue, sharing the same optimizer, allocation,
+tie-break and replay semantics) and the `ConsortiumService`; every pre-existing
+behaviour is unchanged.  (One latent bug was fixed on the way: `quote()` used
+`INVALID_BASKET` without importing it, so the unknown-SKU path raised
+`NameError` instead of the typed error.)
 
 ## Verification
 

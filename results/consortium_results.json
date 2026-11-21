@@ -1,0 +1,1407 @@
+{
+  "checks": [
+    {
+      "actual": 4,
+      "check": "pair_lock.grand_saves_4",
+      "expected": 4,
+      "ok": true
+    },
+    {
+      "actual": {
+        "AB": 4,
+        "AC": 4,
+        "BC": 4
+      },
+      "check": "pair_lock.every_pair_quotes_4",
+      "expected": 4,
+      "ok": true
+    },
+    {
+      "actual": "REJECTED",
+      "check": "pair_lock.rejected",
+      "expected": "REJECTED",
+      "ok": true
+    },
+    {
+      "actual": null,
+      "check": "pair_lock.certificate_is_the_three_pairs",
+      "expected": null,
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "pair_lock.certificate_verified",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": {
+        "A": 2,
+        "B": 2,
+        "C": 2
+      },
+      "check": "grand_coupon.signed_2_2_2",
+      "expected": {
+        "A": 2,
+        "B": 2,
+        "C": 2
+      },
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "grand_coupon.no_exit",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "grand_coupon.verified",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": "REJECTED",
+      "check": "minimum_blocks.rejected",
+      "expected": "REJECTED",
+      "ok": true
+    },
+    {
+      "actual": 6,
+      "check": "minimum_blocks.total_exceeds_minimum_yet_infeasible",
+      "expected": "6 > 3",
+      "ok": true
+    },
+    {
+      "actual": null,
+      "check": "minimum_blocks.certificate_is_bc_coalition_plus_minimum",
+      "expected": null,
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "minimum_blocks.certificate_verified",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": 6,
+      "check": "membership.grand_saves_same_6",
+      "expected": 6,
+      "ok": true
+    },
+    {
+      "actual": 3,
+      "check": "membership.coalition_quote_is_independent_not_proportional",
+      "expected": 3,
+      "ok": true
+    },
+    {
+      "actual": {
+        "A": 3,
+        "B": 1,
+        "C": 2
+      },
+      "check": "membership.signed_3_1_2",
+      "expected": {
+        "A": 3,
+        "B": 1,
+        "C": 2
+      },
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "membership.verified",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": {
+        "A": 1,
+        "B": 2,
+        "C": 3
+      },
+      "check": "refund.first_signed_1_2_3",
+      "expected": {
+        "A": 1,
+        "B": 2,
+        "C": 3
+      },
+      "ok": true
+    },
+    {
+      "actual": null,
+      "check": "refund.refunded_unit_excluded",
+      "expected": null,
+      "ok": true
+    },
+    {
+      "actual": "REJECTED",
+      "check": "refund.second_rejected",
+      "expected": "REJECTED",
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "refund.second_certificate_verified",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "refund.first_record_intact",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": 40,
+      "check": "twelve.grand_saves_40",
+      "expected": 40,
+      "ok": true
+    },
+    {
+      "actual": null,
+      "check": "twelve.pair_quote_replays",
+      "expected": null,
+      "ok": true
+    },
+    {
+      "actual": {
+        "C01": 3,
+        "C02": 3,
+        "C03": 3,
+        "C04": 3,
+        "C05": 3,
+        "C06": 3,
+        "C07": 3,
+        "C08": 3,
+        "C09": 4,
+        "C10": 4,
+        "C11": 4,
+        "C12": 4
+      },
+      "check": "twelve.signed_expected_split",
+      "expected": {
+        "C01": 3,
+        "C02": 3,
+        "C03": 3,
+        "C04": 3,
+        "C05": 3,
+        "C06": 3,
+        "C07": 3,
+        "C08": 3,
+        "C09": 4,
+        "C10": 4,
+        "C11": 4,
+        "C12": 4
+      },
+      "ok": true
+    },
+    {
+      "actual": 1,
+      "check": "twelve.range_is_1",
+      "expected": 1,
+      "ok": true
+    },
+    {
+      "actual": 4095,
+      "check": "twelve.no_exit_all_4095",
+      "expected": 4095,
+      "ok": true
+    },
+    {
+      "actual": [],
+      "check": "twelve.verified",
+      "expected": true,
+      "ok": true
+    },
+    {
+      "actual": null,
+      "check": "reopen.preserves_settlements",
+      "expected": null,
+      "ok": true
+    },
+    {
+      "actual": null,
+      "check": "reopen.verify_still_valid",
+      "expected": null,
+      "ok": true
+    }
+  ],
+  "database": "/workspace/data/consortium.db",
+  "plan": {
+    "note": "The grand_coupon scenario as a replayable JSON plan (python -m basket_service run-plan).",
+    "steps": [
+      {
+        "coupons": [
+          {
+            "D": 4,
+            "coupon_id": "AB",
+            "requires": {
+              "A": 1,
+              "B": 1
+            }
+          },
+          {
+            "D": 4,
+            "coupon_id": "AC",
+            "requires": {
+              "A": 1,
+              "C": 1
+            }
+          },
+          {
+            "D": 4,
+            "coupon_id": "BC",
+            "requires": {
+              "B": 1,
+              "C": 1
+            }
+          },
+          {
+            "D": 6,
+            "coupon_id": "ABC",
+            "requires": {
+              "A": 1,
+              "B": 1,
+              "C": 1
+            }
+          }
+        ],
+        "op": "publish_snapshot",
+        "products": [
+          {
+            "price": 10,
+            "sku": "A"
+          },
+          {
+            "price": 10,
+            "sku": "B"
+          },
+          {
+            "price": 10,
+            "sku": "C"
+          }
+        ],
+        "snapshot_id": "pairs-plus-grand"
+      },
+      {
+        "basket": [
+          {
+            "price": 10,
+            "sku": "A",
+            "unit_id": "a"
+          },
+          {
+            "price": 10,
+            "sku": "B",
+            "unit_id": "b"
+          },
+          {
+            "price": 10,
+            "sku": "C",
+            "unit_id": "c"
+          }
+        ],
+        "coupons": [],
+        "name": "q",
+        "op": "quote",
+        "request_id": "q-b",
+        "snapshot_id": "pairs-plus-grand"
+      },
+      {
+        "op": "register_sale",
+        "quote": "$q",
+        "sale_id": "S-b"
+      },
+      {
+        "consent": {
+          "AB": {
+            "must": [
+              "A",
+              "B"
+            ]
+          },
+          "ABC": {
+            "must": [
+              "A",
+              "B",
+              "C"
+            ]
+          },
+          "AC": {
+            "must": [
+              "A",
+              "C"
+            ]
+          },
+          "BC": {
+            "must": [
+              "B",
+              "C"
+            ]
+          }
+        },
+        "consortium_id": "cons-b",
+        "counters": [
+          "A",
+          "B",
+          "C"
+        ],
+        "minimums": {
+          "A": 0,
+          "B": 0,
+          "C": 0
+        },
+        "op": "create_consortium",
+        "snapshot_id": "pairs-plus-grand"
+      },
+      {
+        "consortium_id": "cons-b",
+        "deal_id": "deal-b",
+        "op": "create_deal",
+        "sale_ids": [
+          "S-b"
+        ],
+        "unit_counters": {
+          "S-b:a": "A",
+          "S-b:b": "B",
+          "S-b:c": "C"
+        }
+      },
+      {
+        "counters": [
+          "A",
+          "B"
+        ],
+        "deal_id": "deal-b",
+        "op": "quote_coalition"
+      },
+      {
+        "deal_id": "deal-b",
+        "op": "attempt_settlement",
+        "request_id": "settle-b"
+      },
+      {
+        "op": "check_no_exit",
+        "settlement_id": "settle-b"
+      },
+      {
+        "op": "verify_settlement",
+        "settlement_id": "settle-b"
+      }
+    ]
+  },
+  "scenarios": {
+    "grand_coupon": {
+      "grand_quote": {
+        "coupon_ids": [
+          "ABC"
+        ],
+        "discount": 6
+      },
+      "independent_verification": {
+        "checks": [
+          {
+            "check": "pool_and_excluded_cover_deal_units",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_covers_exactly_the_deal_mapping",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_matches_immutable_sale_facts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "total_is_sum_of_active_discounts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "minimums_match_confirmed_version",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "coalition[A].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-b:08fae56c941e:A"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-b:08fae56c941e:A+B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-b:08fae56c941e:A+B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-b:08fae56c941e:A+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-b:08fae56c941e:B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-b:08fae56c941e:B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-b:08fae56c941e:C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition_values_match_independent_reference",
+            "detail": {},
+            "ok": true
+          },
+          {
+            "check": "split_sums_to_total",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "split_covers_counters",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "minimums_respected",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "all_coalition_constraints_hold",
+            "detail": {
+              "tightest": [
+                0,
+                "A+B"
+              ]
+            },
+            "ok": true
+          },
+          {
+            "check": "split_matches_brute_force_optimum",
+            "detail": {
+              "actual": {
+                "A": 2,
+                "B": 2,
+                "C": 2
+              },
+              "expected": {
+                "A": 2,
+                "B": 2,
+                "C": 2
+              }
+            },
+            "ok": true
+          },
+          {
+            "check": "units_refunded_after_signing",
+            "detail": [],
+            "ok": true
+          }
+        ],
+        "problems": [],
+        "settlement_id": "settle-b",
+        "status": "SIGNED",
+        "valid": true
+      },
+      "no_exit": {
+        "coalitions_checked": 7,
+        "settlement_id": "settle-b",
+        "split": {
+          "A": 2,
+          "B": 2,
+          "C": 2
+        },
+        "stable": true,
+        "sum_matches": true,
+        "total": 6,
+        "violations": []
+      },
+      "settlement": {
+        "range": 0,
+        "split": {
+          "A": 2,
+          "B": 2,
+          "C": 2
+        },
+        "status": "SIGNED"
+      }
+    },
+    "membership": {
+      "coalition_AC": {
+        "eligible": [
+          "A-SOLO"
+        ],
+        "proportional_copy_of_grand_would_be": 4,
+        "savings": 3
+      },
+      "coalition_values": {
+        "A": 3,
+        "A+B": 3,
+        "A+B+C": 6,
+        "A+C": 3,
+        "B": 0,
+        "B+C": 3,
+        "C": 0
+      },
+      "grand_quote": {
+        "coupon_ids": [
+          "A-SOLO",
+          "BC"
+        ],
+        "discount": 6
+      },
+      "independent_verification": {
+        "checks": [
+          {
+            "check": "pool_and_excluded_cover_deal_units",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_covers_exactly_the_deal_mapping",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_matches_immutable_sale_facts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "total_is_sum_of_active_discounts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "minimums_match_confirmed_version",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "coalition[A].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-d:b2addea60b77:A"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-d:b2addea60b77:A+B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-d:b2addea60b77:A+B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-d:b2addea60b77:A+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-d:b2addea60b77:B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-d:b2addea60b77:B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-d:b2addea60b77:C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition_values_match_independent_reference",
+            "detail": {},
+            "ok": true
+          },
+          {
+            "check": "split_sums_to_total",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "split_covers_counters",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "minimums_respected",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "all_coalition_constraints_hold",
+            "detail": {
+              "tightest": [
+                0,
+                "A"
+              ]
+            },
+            "ok": true
+          },
+          {
+            "check": "split_matches_brute_force_optimum",
+            "detail": {
+              "actual": {
+                "A": 3,
+                "B": 1,
+                "C": 2
+              },
+              "expected": {
+                "A": 3,
+                "B": 1,
+                "C": 2
+              }
+            },
+            "ok": true
+          },
+          {
+            "check": "units_refunded_after_signing",
+            "detail": [],
+            "ok": true
+          }
+        ],
+        "problems": [],
+        "settlement_id": "settle-d",
+        "status": "SIGNED",
+        "valid": true
+      },
+      "settlement": {
+        "range": 2,
+        "split": {
+          "A": 3,
+          "B": 1,
+          "C": 2
+        },
+        "status": "SIGNED"
+      }
+    },
+    "minimum_blocks": {
+      "certificate_summary": [
+        {
+          "counters": [
+            "B",
+            "C"
+          ],
+          "kind": "coalition",
+          "value": 4,
+          "weight": 1
+        },
+        {
+          "counter": "A",
+          "kind": "minimum",
+          "value": 3,
+          "weight": 1
+        },
+        {
+          "kind": "total",
+          "value": 6,
+          "weight": -1
+        }
+      ],
+      "independent_verification": {
+        "checks": [
+          {
+            "check": "pool_and_excluded_cover_deal_units",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_covers_exactly_the_deal_mapping",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_matches_immutable_sale_facts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "total_is_sum_of_active_discounts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "minimums_match_confirmed_version",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "coalition[A].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-c:101ebeb48058:A"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-c:101ebeb48058:A+B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-c:101ebeb48058:A+B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-c:101ebeb48058:A+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-c:101ebeb48058:B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-c:101ebeb48058:B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-c:101ebeb48058:C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition_values_match_independent_reference",
+            "detail": {},
+            "ok": true
+          },
+          {
+            "check": "certificate_valid",
+            "detail": [],
+            "ok": true
+          },
+          {
+            "check": "units_refunded_after_signing",
+            "detail": [],
+            "ok": true
+          }
+        ],
+        "problems": [],
+        "settlement_id": "settle-c",
+        "status": "REJECTED",
+        "valid": true
+      },
+      "note": "same snapshot/sales/coalition quotes as grand_coupon; only A's confirmed minimum is 3",
+      "settlement": {
+        "status": "REJECTED",
+        "total": 6
+      }
+    },
+    "pair_lock": {
+      "certificate": {
+        "constraints": [
+          {
+            "counters": [
+              "B",
+              "C"
+            ],
+            "kind": "coalition",
+            "value": 4,
+            "weight": 1
+          },
+          {
+            "counters": [
+              "A",
+              "C"
+            ],
+            "kind": "coalition",
+            "value": 4,
+            "weight": 1
+          },
+          {
+            "counters": [
+              "A",
+              "B"
+            ],
+            "kind": "coalition",
+            "value": 4,
+            "weight": 1
+          },
+          {
+            "kind": "total",
+            "value": 4,
+            "weight": -2
+          }
+        ],
+        "counter_order": [
+          "A",
+          "B",
+          "C"
+        ],
+        "scale": 1,
+        "total": 4,
+        "type": "farkas"
+      },
+      "certificate_summary": [
+        {
+          "counters": [
+            "B",
+            "C"
+          ],
+          "kind": "coalition",
+          "value": 4,
+          "weight": 1
+        },
+        {
+          "counters": [
+            "A",
+            "C"
+          ],
+          "kind": "coalition",
+          "value": 4,
+          "weight": 1
+        },
+        {
+          "counters": [
+            "A",
+            "B"
+          ],
+          "kind": "coalition",
+          "value": 4,
+          "weight": 1
+        },
+        {
+          "kind": "total",
+          "value": 4,
+          "weight": -2
+        }
+      ],
+      "grand_quote_discount": 4,
+      "independent_verification": {
+        "checks": [
+          {
+            "check": "pool_and_excluded_cover_deal_units",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_covers_exactly_the_deal_mapping",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "pool_matches_immutable_sale_facts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "total_is_sum_of_active_discounts",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "minimums_match_confirmed_version",
+            "detail": null,
+            "ok": true
+          },
+          {
+            "check": "coalition[A].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-a:bfe568a4b74f:A"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-a:bfe568a4b74f:A+B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-a:bfe568a4b74f:A+B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[A+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-a:bfe568a4b74f:A+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-a:bfe568a4b74f:B"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[B+C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-a:bfe568a4b74f:B+C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition[C].quote_record_consistent",
+            "detail": {
+              "quote_request_id": "cq:deal-a:bfe568a4b74f:C"
+            },
+            "ok": true
+          },
+          {
+            "check": "coalition_values_match_independent_reference",
+            "detail": {},
+            "ok": true
+          },
+          {
+            "check": "certificate_valid",
+            "detail": [],
+            "ok": true
+          },
+          {
+            "check": "units_refunded_after_signing",
+            "detail": [],
+            "ok": true
+          }
+        ],
+        "problems": [],
+        "settlement_id": "settle-a",
+        "status": "REJECTED",
+        "valid": true
+      },
+      "pair_quotes": {
+        "AB": {
+          "eligible": [
+            "AB"
+          ],
+          "savings": 4
+        },
+        "AC": {
+          "eligible": [
+            "AC"
+          ],
+          "savings": 4
+        },
+        "BC": {
+          "eligible": [
+            "BC"
+          ],
+          "savings": 4
+        }
+      },
+      "settlement": {
+        "status": "REJECTED",
+        "total": 4
+      }
+    },
+    "refund": {
+      "first_settlement": {
+        "range": 2,
+        "split": {
+          "A": 1,
+          "B": 2,
+          "C": 3
+        },
+        "status": "SIGNED"
+      },
+      "first_settlement_still_queryable": {
+        "split": {
+          "A": 1,
+          "B": 2,
+          "C": 3
+        },
+        "status": "SIGNED"
+      },
+      "independent_verification": {
+        "first_after_refund": {
+          "checks": [
+            {
+              "check": "pool_and_excluded_cover_deal_units",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "pool_covers_exactly_the_deal_mapping",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "pool_matches_immutable_sale_facts",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "total_is_sum_of_active_discounts",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "minimums_match_confirmed_version",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "coalition[A].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r1:df64c89ba104:A"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[A+B].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r1:df64c89ba104:A+B"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[A+B+C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r1:df64c89ba104:A+B+C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[A+C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r1:df64c89ba104:A+C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[B].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r1:df64c89ba104:B"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[B+C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r1:df64c89ba104:B+C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r1:df64c89ba104:C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition_values_match_independent_reference",
+              "detail": {},
+              "ok": true
+            },
+            {
+              "check": "split_sums_to_total",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "split_covers_counters",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "minimums_respected",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "all_coalition_constraints_hold",
+              "detail": {
+                "tightest": [
+                  0,
+                  "A+B+C"
+                ]
+              },
+              "ok": true
+            },
+            {
+              "check": "split_matches_brute_force_optimum",
+              "detail": {
+                "actual": {
+                  "A": 1,
+                  "B": 2,
+                  "C": 3
+                },
+                "expected": {
+                  "A": 1,
+                  "B": 2,
+                  "C": 3
+                }
+              },
+              "ok": true
+            },
+            {
+              "check": "units_refunded_after_signing",
+              "detail": [],
+              "ok": true
+            }
+          ],
+          "problems": [],
+          "settlement_id": "settle-r1",
+          "status": "SIGNED",
+          "valid": true
+        },
+        "second": {
+          "checks": [
+            {
+              "check": "pool_and_excluded_cover_deal_units",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "pool_covers_exactly_the_deal_mapping",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "pool_matches_immutable_sale_facts",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "total_is_sum_of_active_discounts",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "minimums_match_confirmed_version",
+              "detail": null,
+              "ok": true
+            },
+            {
+              "check": "coalition[A].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r2:5a2525f13cdb:A"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[A+B].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r2:5a2525f13cdb:A+B"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[A+B+C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r2:5a2525f13cdb:A+B+C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[A+C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r2:5a2525f13cdb:A+C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[B].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r2:5a2525f13cdb:B"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[B+C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r2:5a2525f13cdb:B+C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition[C].quote_record_consistent",
+              "detail": {
+                "quote_request_id": "cq:deal-r2:5a2525f13cdb:C"
+              },
+              "ok": true
+            },
+            {
+              "check": "coalition_values_match_independent_reference",
+              "detail": {},
+              "ok": true
+            },
+            {
+              "check": "certificate_valid",
+              "detail": [],
+              "ok": true
+            },
+            {
+              "check": "units_refunded_after_signing",
+              "detail": [],
+              "ok": true
+            }
+          ],
+          "problems": [],
+          "settlement_id": "settle-r2",
+          "status": "REJECTED",
+          "valid": true
+        }
+      },
+      "refunded_unit": "S-r2:a2",
+      "second_deal": {
+        "active_pool": [
+          "S-r2:b2",
+          "S-r2:c2"
+        ],
+        "current_total": 4,
+        "excluded_units": [
+          "S-r2:a2"
+        ]
+      },
+      "second_settlement": {
+        "certificate_summary": [
+          {
+            "counters": [
+              "B",
+              "C"
+            ],
+            "kind": "coalition",
+            "value": 5,
+            "weight": 1
+          },
+          {
+            "counter": "A",
+            "kind": "minimum",
+            "value": 0,
+            "weight": 1
+          },
+          {
+            "kind": "total",
+            "value": 4,
+            "weight": -1
+          }
+        ],
+        "status": "REJECTED",
+        "total": 4
+      }
+    },
+    "twelve_counters": {
+      "grand_quote": {
+        "coupon_ids": [
+          "G12"
+        ],
+        "discount": 40
+      },
+      "independent_verification_summary": {
+        "checks": 4107,
+        "problems": [],
+        "valid": true
+      },
+      "no_exit": {
+        "coalitions_checked": 4095,
+        "settlement_id": "settle-12",
+        "split": {
+          "C01": 3,
+          "C02": 3,
+          "C03": 3,
+          "C04": 3,
+          "C05": 3,
+          "C06": 3,
+          "C07": 3,
+          "C08": 3,
+          "C09": 4,
+          "C10": 4,
+          "C11": 4,
+          "C12": 4
+        },
+        "stable": true,
+        "sum_matches": true,
+        "total": 40,
+        "violations": []
+      },
+      "pair_quote": {
+        "quote_request_id": "cq:deal-12:c1a514c8b6df:C01+C02",
+        "replay_identical": true,
+        "savings": 5
+      },
+      "settlement": {
+        "range": 1,
+        "split": {
+          "C01": 3,
+          "C02": 3,
+          "C03": 3,
+          "C04": 3,
+          "C05": 3,
+          "C06": 3,
+          "C07": 3,
+          "C08": 3,
+          "C09": 4,
+          "C10": 4,
+          "C11": 4,
+          "C12": 4
+        },
+        "status": "SIGNED"
+      }
+    }
+  },
+  "summary": {
+    "checks": 29,
+    "failed": 0,
+    "passed": 29
+  }
+}

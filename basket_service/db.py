@@ -184,5 +184,62 @@ class Database:
                 qty INTEGER NOT NULL,
                 PRIMARY KEY (sku, bucket)
             );
+
+            CREATE TABLE IF NOT EXISTS consortiums (
+                consortium_id TEXT PRIMARY KEY,
+                snapshot_id TEXT NOT NULL,
+                counters_json TEXT NOT NULL,
+                consent_json TEXT NOT NULL,
+                minimums_json TEXT NOT NULL,
+                minimums_version INTEGER NOT NULL,
+                created_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS consortium_minimums (
+                consortium_id TEXT NOT NULL,
+                version INTEGER NOT NULL,
+                minimums_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY (consortium_id, version),
+                FOREIGN KEY (consortium_id) REFERENCES consortiums(consortium_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS deals (
+                deal_id TEXT PRIMARY KEY,
+                consortium_id TEXT NOT NULL,
+                sales_json TEXT NOT NULL,
+                unit_counters_json TEXT NOT NULL,
+                content_sig TEXT NOT NULL,
+                status TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (consortium_id) REFERENCES consortiums(consortium_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS deal_sales (
+                sale_id TEXT PRIMARY KEY,
+                deal_id TEXT NOT NULL,
+                FOREIGN KEY (deal_id) REFERENCES deals(deal_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS settlements (
+                settlement_id TEXT PRIMARY KEY,
+                deal_id TEXT NOT NULL,
+                consortium_id TEXT NOT NULL,
+                status TEXT NOT NULL,
+                minimums_version INTEGER NOT NULL,
+                pool_sig TEXT NOT NULL,
+                record_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (deal_id) REFERENCES deals(deal_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS settlement_coalitions (
+                settlement_id TEXT NOT NULL,
+                coalition_key TEXT NOT NULL,
+                savings INTEGER NOT NULL,
+                quote_request_id TEXT NOT NULL,
+                PRIMARY KEY (settlement_id, coalition_key),
+                FOREIGN KEY (settlement_id) REFERENCES settlements(settlement_id)
+            );
             """
         )

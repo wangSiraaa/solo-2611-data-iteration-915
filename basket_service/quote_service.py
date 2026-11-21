@@ -20,6 +20,8 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 from . import optimizer
 from .db import Database, canonical_json, deep_copy, json_loads, utc_now
 from .errors import (
+    INVALID_BASKET,
+    INVALID_COUPON,
     INVALID_INPUT,
     QUOTE_CONFLICT,
     REQUEST_CONFLICT,
@@ -83,6 +85,9 @@ def _canonical_snapshot(products: Any, coupons: Any) -> Dict[str, Any]:
 class QuoteService:
     def __init__(self, db: Database):
         self.db = db
+        # Snapshots are immutable per id (conflicting re-publishes are rejected
+        # by the database), so caching them in memory is always safe.
+        self._snapshot_cache: Dict[str, Dict[str, Any]] = {}
 
     # -- snapshots ---------------------------------------------------------
     def publish_snapshot(
@@ -124,17 +129,22 @@ class QuoteService:
         return chosen_id
 
     def get_snapshot(self, snapshot_id: str) -> Dict[str, Any]:
+        cached = self._snapshot_cache.get(snapshot_id)
+        if cached is not None:
+            return deep_copy(cached)
         with self.db.connection() as conn:
             row = conn.execute("SELECT * FROM snapshots WHERE snapshot_id = ?", (snapshot_id,)).fetchone()
         if row is None:
             raise BasketError(UNKNOWN_SNAPSHOT, "unknown snapshot", {"snapshot_id": snapshot_id})
-        return {
+        snapshot = {
             "snapshot_id": row["snapshot_id"],
             "seq": row["seq"],
             "products": json_loads(row["products_json"]),
             "coupons": json_loads(row["coupons_json"]),
             "created_at": row["created_at"],
         }
+        self._snapshot_cache[snapshot_id] = deep_copy(snapshot)
+        return snapshot
 
     # -- quoting -----------------------------------------------------------
     def quote(
@@ -246,6 +256,164 @@ class QuoteService:
                 (request_id, snapshot_id, basket_sig, canonical_json(units), canonical_json(quote), utc_now()),
             )
         return deep_copy(quote)
+
+    # -- subset quoting (consortium coalitions) ------------------------------
+    def _prepare_subset(
+        self, basket: Any, snapshot_id: str, coupon_ids: Sequence[str], request_id: str
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], str, str, str]:
+        """Validate a subset-quote request; return canonical parts + signature."""
+
+        units = validate_basket(basket)
+        skus = {u["sku"] for u in units}
+        request_id = require_id(request_id, INVALID_INPUT, "request_id")
+        require_id(snapshot_id, INVALID_INPUT, "snapshot_id")
+        snapshot = self.get_snapshot(snapshot_id)
+        declared = {p["sku"] for p in snapshot["products"]}
+        if declared:
+            unknown = sorted(skus - declared)
+            if unknown:
+                raise BasketError(
+                    INVALID_BASKET,
+                    "basket unit sku is not present in the bound snapshot's product catalogue",
+                    {"snapshot_id": snapshot_id, "skus": unknown},
+                )
+        if coupon_ids is None or isinstance(coupon_ids, (str, bytes, Mapping)):
+            raise BasketError(INVALID_INPUT, "coupon_ids must be a list")
+        if not isinstance(coupon_ids, Sequence):
+            raise BasketError(INVALID_INPUT, "coupon_ids must be a list")
+        chosen: List[str] = []
+        for index, coupon_id in enumerate(coupon_ids):
+            chosen.append(require_id(coupon_id, INVALID_INPUT, f"coupon_ids[{index}]"))
+        chosen = sorted(set(chosen))
+        catalogue = {c["coupon_id"]: c for c in snapshot["coupons"]}
+        unknown_coupons = [cid for cid in chosen if cid not in catalogue]
+        if unknown_coupons:
+            raise BasketError(
+                INVALID_COUPON,
+                "coupon_ids must be a subset of the bound snapshot's catalogue",
+                {"snapshot_id": snapshot_id, "coupon_ids": unknown_coupons},
+            )
+        canonical_coupons = validate_coupons([catalogue[cid] for cid in chosen], skus)
+        basket_sig = _hash({"basket": units, "coupon_ids": chosen})
+        return units, canonical_coupons, snapshot_id, request_id, basket_sig
+
+    def _replay_subset(self, conn, request_id: str, snapshot_id: str, basket_sig: str) -> Optional[Dict[str, Any]]:
+        existing = conn.execute("SELECT * FROM quotes WHERE request_id = ?", (request_id,)).fetchone()
+        if existing is None:
+            return None
+        if existing["snapshot_id"] != snapshot_id or existing["basket_sig"] != basket_sig:
+            raise BasketError(
+                REQUEST_CONFLICT,
+                "request_id reused with a different basket, snapshot or coupon subset",
+                {"request_id": request_id},
+            )
+        return json_loads(existing["quote_json"])
+
+    def _compute_subset_quote(
+        self, units: List[Dict[str, Any]], canonical_coupons: List[Dict[str, Any]], snapshot_id: str, request_id: str
+    ) -> Dict[str, Any]:
+        used_masks, total = optimizer.solve(units, canonical_coupons)
+        coupon_by_id = {c["coupon_id"]: c for c in canonical_coupons}
+        mapping = {
+            coupon_id: [units[i]["unit_id"] for i in range(len(units)) if mask >> i & 1]
+            for coupon_id, mask in used_masks.items()
+        }
+        mapping = {cid: sorted(ids) for cid, ids in sorted(mapping.items())}
+        validate_assignments(mapping, units, canonical_coupons)  # defensive
+        allocation = allocate_report(units, used_masks, {c["coupon_id"]: c["D"] for c in canonical_coupons})
+        if sum(entry["paid"] for entry in allocation) != total:  # pragma: no cover
+            raise BasketError(QUOTE_CONFLICT, "internal total mismatch")
+
+        quote = {
+            "request_id": request_id,
+            "snapshot_id": snapshot_id,
+            "basket": units,
+            "coupons": canonical_coupons,
+            "assignments": mapping,
+            "coupon_ids": sorted(mapping),
+            "allocation": allocation,
+            "total": total,
+            "original_total": sum(u["price"] for u in units),
+            "total_discount": sum(coupon_by_id[cid]["D"] for cid in mapping),
+        }
+        quote = validate_quote_payload(quote)
+        quote.update(
+            {
+                "coupon_ids": sorted(mapping),
+                "original_total": sum(u["price"] for u in units),
+                "total_discount": sum(coupon_by_id[cid]["D"] for cid in mapping),
+            }
+        )
+        return quote
+
+    def quote_subset(
+        self,
+        basket: Any,
+        snapshot_id: str,
+        coupon_ids: Sequence[str],
+        request_id: str,
+    ) -> Dict[str, Any]:
+        """Quote a basket against a *subset* of a published snapshot's catalogue.
+
+        The snapshot still pins the product catalogue and the master coupon
+        list; ``coupon_ids`` must be a subset of the snapshot's coupons.  The
+        subset is part of the request signature, so reusing a request id with a
+        different subset is ``REQUEST_CONFLICT`` and an identical call replays
+        the stored quote byte-for-byte.  Optimisation, per-unit allocation and
+        tie-breaking are exactly those of a full quote.
+        """
+
+        units, canonical_coupons, snapshot_id, request_id, basket_sig = self._prepare_subset(
+            basket, snapshot_id, coupon_ids, request_id
+        )
+        with self.db.connection() as conn:
+            stored = self._replay_subset(conn, request_id, snapshot_id, basket_sig)
+        if stored is not None:
+            return stored
+        quote = self._compute_subset_quote(units, canonical_coupons, snapshot_id, request_id)
+        with self.db.transaction() as conn:
+            stored = self._replay_subset(conn, request_id, snapshot_id, basket_sig)
+            if stored is not None:
+                return stored
+            conn.execute(
+                "INSERT INTO quotes (request_id, snapshot_id, basket_sig, basket_json, quote_json, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                (request_id, snapshot_id, basket_sig, canonical_json(units), canonical_json(quote), utc_now()),
+            )
+        return deep_copy(quote)
+
+    def quote_subset_batch(self, items: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:
+        """Many subset quotes with a single write transaction.
+
+        Each item is ``{"basket", "snapshot_id", "coupon_ids", "request_id"}``;
+        the semantics per item are exactly those of :meth:`quote_subset`
+        (replay on identical request, ``REQUEST_CONFLICT`` on a different
+        body).  Used by the settlement layer, which must quote thousands of
+        coalitions against the same frozen snapshot in one attempt.
+        """
+
+        prepared = [
+            self._prepare_subset(item["basket"], item["snapshot_id"], item["coupon_ids"], item["request_id"])
+            for item in items
+        ]
+        results: List[Optional[Dict[str, Any]]] = [None] * len(prepared)
+        with self.db.connection() as conn:
+            for index, (_units, _coupons, snapshot_id, request_id, basket_sig) in enumerate(prepared):
+                results[index] = self._replay_subset(conn, request_id, snapshot_id, basket_sig)
+        for index, (units, canonical_coupons, snapshot_id, request_id, _sig) in enumerate(prepared):
+            if results[index] is None:
+                results[index] = self._compute_subset_quote(units, canonical_coupons, snapshot_id, request_id)
+        with self.db.transaction() as conn:
+            for index, (units, _coupons, snapshot_id, request_id, basket_sig) in enumerate(prepared):
+                stored = self._replay_subset(conn, request_id, snapshot_id, basket_sig)
+                if stored is not None:
+                    results[index] = stored
+                    continue
+                quote = results[index]
+                conn.execute(
+                    "INSERT INTO quotes (request_id, snapshot_id, basket_sig, basket_json, quote_json, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                    (request_id, snapshot_id, basket_sig, canonical_json(units), canonical_json(quote), utc_now()),
+                )
+        return [deep_copy(q) for q in results]
 
     # -- lookup ------------------------------------------------------------
     def get_quote(self, request_id: str) -> Dict[str, Any]:

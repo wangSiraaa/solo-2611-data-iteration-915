@@ -130,3 +130,180 @@ def expected_return(paid_by_unit: Mapping[str, int], unit_ids: Sequence[str]) ->
 
     per_unit = {unit_id: paid_by_unit[unit_id] for unit_id in unit_ids}
     return sum(per_unit.values()), per_unit
+
+
+# ---------------------------------------------------------------------------
+# Consortium settlement references (independent of basket_service.settlement).
+# ---------------------------------------------------------------------------
+
+
+def coalition_savings(units: Sequence[Mapping[str, Any]], coupons: Sequence[Mapping[str, Any]]) -> int:
+    """Savings of one coalition quote, recomputed by exhaustive enumeration."""
+
+    total, _used, _unit_lists, _mapping = exhaustive_best(units, coupons)
+    return sum(u["price"] for u in units) - total
+
+
+def brute_force_split(
+    counter_order: Sequence[str],
+    minimums: Mapping[str, int],
+    total: int,
+    values: Mapping[frozenset, int],
+) -> Optional[Dict[str, int]]:
+    """Exhaustive enumeration of every integer split; the ground truth.
+
+    Returns the split minimising first the spread ``max - min`` and then the
+    amount vector in ``counter_order`` (lexicographic), or ``None`` when no
+    split satisfies every coalition constraint and every minimum.  Feasible
+    for small counter counts and totals (used by the differential tests).
+    """
+
+    n = len(counter_order)
+    m = [minimums[c] for c in counter_order]
+    rest = total - sum(m)
+    if rest < 0:
+        return None
+    masks = []
+    for key, value in values.items():
+        mask = 0
+        for counter in key:
+            mask |= 1 << counter_order.index(counter)
+        masks.append((mask, value))
+
+    best: Optional[Tuple[int, Tuple[int, ...]]] = None
+    best_split: Optional[Tuple[int, ...]] = None
+
+    def walk(position: int, remaining: int, current: List[int]) -> None:
+        nonlocal best, best_split
+        if position == n - 1:
+            current.append(remaining)
+            amounts = [m[i] + current[i] for i in range(n)]
+            ok = True
+            for mask, value in masks:
+                if sum(amounts[i] for i in range(n) if mask >> i & 1) < value:
+                    ok = False
+                    break
+            if ok:
+                spread = max(amounts) - min(amounts)
+                signature = (spread, tuple(amounts))
+                if best is None or signature < best:
+                    best = signature
+                    best_split = tuple(amounts)
+            current.pop()
+            return
+        for value in range(remaining + 1):
+            current.append(value)
+            walk(position + 1, remaining - value, current)
+            current.pop()
+
+    walk(0, rest, [])
+    if best_split is None:
+        return None
+    return {counter_order[i]: best_split[i] for i in range(n)}
+
+
+def verify_farkas_certificate(
+    cert: Mapping[str, Any],
+    values: Mapping[frozenset, int],
+    minimums: Mapping[str, int],
+    total: int,
+) -> Dict[str, Any]:
+    """Independently re-check a Farkas infeasibility certificate.
+
+    Recomputes the per-counter weight sums and the combined right-hand side
+    from the certificate and the *true* coalition values / minimums / total;
+    the certificate is valid iff every counter cancels to zero and the
+    combined right-hand side is strictly positive.
+    """
+
+    order = list(cert["counter_order"])
+    sums = {c: 0 for c in order}
+    rhs = 0
+    problems: List[str] = []
+    for con in cert["constraints"]:
+        weight = con["weight"]
+        if con["kind"] == "coalition":
+            key = frozenset(con["counters"])
+            if values.get(key) != con["value"]:
+                problems.append(f"coalition {sorted(key)} value mismatch")
+                continue
+            for counter in con["counters"]:
+                sums[counter] += weight
+            rhs += weight * con["value"]
+        elif con["kind"] == "minimum":
+            if minimums.get(con["counter"]) != con["value"]:
+                problems.append(f"minimum of {con['counter']} mismatch")
+                continue
+            sums[con["counter"]] += weight
+            rhs += weight * con["value"]
+        elif con["kind"] == "total":
+            if con["value"] != total:
+                problems.append("total mismatch")
+                continue
+            for counter in order:
+                sums[counter] += weight
+            rhs += weight * con["value"]
+        else:
+            problems.append(f"unknown constraint kind {con['kind']!r}")
+    unbalanced = {c: amount for c, amount in sums.items() if amount != 0}
+    if unbalanced:
+        problems.append(f"counters do not cancel: {unbalanced}")
+    if rhs <= 0:
+        problems.append(f"combined right-hand side {rhs} is not positive")
+    return {"valid": not problems, "problems": problems, "per_counter_sum": sums, "combined_rhs": rhs}
+
+
+def verify_enumeration_certificate(cert: Mapping[str, Any]) -> Dict[str, Any]:
+    """Independently re-check an integer-enumeration infeasibility certificate.
+
+    Recomputes the per-counter upper bounds from the certificate's own values
+    map, enumerates every candidate split inside the box, and confirms that no
+    candidate satisfies all coalition constraints, the minimums and the total.
+    """
+
+    order = list(cert["counter_order"])
+    n = len(order)
+    minimums = cert["minimums"]
+    total = cert["total"]
+    values = {frozenset(entry["counters"]): entry["value"] for entry in cert["values"]}
+    m = [minimums[c] for c in order]
+    rest = total - sum(m)
+    full = (1 << n) - 1
+    b = {}
+    for key, value in values.items():
+        mask = 0
+        for counter in key:
+            mask |= 1 << order.index(counter)
+        b[mask] = value - sum(m[i] for i in range(n) if mask >> i & 1)
+    expected_domains = [[m[i], m[i] + rest - max(b.get(full ^ (1 << i), 0), 0)] for i in range(n)]
+    if [list(d) for d in cert["domains"]] != expected_domains:
+        return {"valid": False, "problems": ["domains do not match the recomputed bounds"]}
+    points = 0
+    feasible: List[Tuple[int, ...]] = []
+
+    def walk(position: int, current: List[int]) -> None:
+        nonlocal points
+        if position == n:
+            points += 1
+            amounts = current
+            if sum(amounts) != total:
+                return
+            for key, value in values.items():
+                mask = 0
+                for counter in key:
+                    mask |= 1 << order.index(counter)
+                if sum(amounts[i] for i in range(n) if mask >> i & 1) < value:
+                    return
+            feasible.append(tuple(amounts))
+            return
+        lo, hi = expected_domains[position]
+        for value in range(lo, hi + 1):
+            walk(position + 1, current + [value])
+
+    walk(0, [])
+    problems = []
+    if feasible:
+        problems.append(f"found {len(feasible)} feasible splits, e.g. {feasible[0]}")
+    if points != cert["points_checked"]:
+        problems.append(f"point count {points} != certificate {cert['points_checked']}")
+    return {"valid": not problems, "problems": problems, "points_checked": points}

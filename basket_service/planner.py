@@ -21,6 +21,16 @@ Supported ops::
     inventory          skus?
     audit_sales
     audit_inventory
+    create_consortium  consortium_id, snapshot_id, counters, consent, minimums
+    get_consortium     consortium_id
+    confirm_minimums   consortium_id, minimums
+    create_deal        deal_id, consortium_id, sale_ids, unit_counters
+    get_deal           deal_id
+    quote_coalition    deal_id, counters, request_id?
+    attempt_settlement deal_id, request_id
+    get_settlement     settlement_id
+    check_no_exit      settlement_id
+    verify_settlement  settlement_id, deep?
 
 Any step may set ``"expect_error": <code>`` (string or list) to assert that the
 operation is rejected with that error code; the transcript then records a
@@ -144,6 +154,41 @@ def _execute(service, step: Mapping[str, Any], env: Mapping[str, Any]) -> Any:
         return service.audit_sales()
     if op == "audit_inventory":
         return service.audit_inventory()
+    if op == "create_consortium":
+        return service.create_consortium(
+            _require(step, "consortium_id", op),
+            _require(step, "snapshot_id", op),
+            _require(step, "counters", op),
+            _require(step, "consent", op),
+            _require(step, "minimums", op),
+        )
+    if op == "get_consortium":
+        return service.get_consortium(_require(step, "consortium_id", op))
+    if op == "confirm_minimums":
+        return service.confirm_minimums(_require(step, "consortium_id", op), _require(step, "minimums", op))
+    if op == "create_deal":
+        return service.create_deal(
+            _require(step, "deal_id", op),
+            _require(step, "consortium_id", op),
+            _require(step, "sale_ids", op),
+            _require(step, "unit_counters", op),
+        )
+    if op == "get_deal":
+        return service.get_deal(_require(step, "deal_id", op))
+    if op == "quote_coalition":
+        return service.quote_coalition(
+            _require(step, "deal_id", op),
+            _require(step, "counters", op),
+            step.get("request_id"),
+        )
+    if op == "attempt_settlement":
+        return service.attempt_settlement(_require(step, "deal_id", op), _require(step, "request_id", op))
+    if op == "get_settlement":
+        return service.get_settlement(_require(step, "settlement_id", op))
+    if op == "check_no_exit":
+        return service.check_no_exit(_require(step, "settlement_id", op))
+    if op == "verify_settlement":
+        return service.verify_settlement(_require(step, "settlement_id", op), deep=step.get("deep", True))
     raise PlanError(f"unknown op {op!r}", step_index=-1, step=step, transcript=[])
 
 

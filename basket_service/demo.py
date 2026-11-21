@@ -563,6 +563,11 @@ def main(argv: List[str] | None = None) -> int:
     selfcheck.add_argument("--db", default=str(ROOT / "data" / "selfcheck.db"))
     selfcheck.add_argument("--out", default=str(ROOT / "results" / "self_check.json"))
 
+    consortium = sub.add_parser("consortium-demo", help="run the consortium settlement demo")
+    consortium.add_argument("--db", default=str(ROOT / "data" / "consortium.db"))
+    consortium.add_argument("--out", default=str(ROOT / "results" / "consortium_results.json"))
+    consortium.add_argument("--plan", default=str(ROOT / "results" / "consortium_plan.json"))
+
     args = parser.parse_args(argv)
     if args.command == "demo":
         os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
@@ -574,6 +579,14 @@ def main(argv: List[str] | None = None) -> int:
         result = _run_plan_file(args.db, args.plan, args.out)
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
+    if args.command == "consortium-demo":
+        from .consortium_demo import run_consortium_demo
+
+        os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+        os.makedirs(os.path.dirname(args.db) or ".", exist_ok=True)
+        results = run_consortium_demo(args.db, args.out, args.plan)
+        print(json.dumps({"database": args.db, "results": args.out, "summary": results["summary"]}, indent=2))
+        return 0 if results["summary"]["failed"] == 0 else 1
     if args.command == "self-check":
         import unittest
 
